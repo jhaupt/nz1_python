@@ -55,8 +55,15 @@ HeadRoll.i2cSetup()
 def move():	#This function takes in v_x and v_th and calculates the velocity for each wheel and writes it to each wheel
 	vel1 = -1*(v_x + v_th)
 	vel2 = v_x - v_th
-	I1 = int(abs(vel1))	#simple current scaling
-	I2 = int(abs(vel2))
+	I1 = 3*int(abs(vel1))	#simple current scaling
+	I2 = 3*int(abs(vel2))
+	print("I1="),
+	print(I1),
+	print("A")
+	print("I2="),
+	print(I2),
+	print("A")
+	print(" ")
 	if vel1 == 0:
 		I1 = 0
 	if vel2 == 0:
