@@ -1,16 +1,16 @@
 import ctypes, pylibi2c, time, sys, termios, tty, os
 
-#MAKE A CLASS FOR JOINTS.. on a personal note, I'd never ever felt the need to get into OOP until now. Making this "joint" class makes things so much easier.
-class joint:	#In robotics parlace we think of each motor as a joint
+#---------------------MAKE A CLASS FOR THE NEARZERO-----------------------------------
+class nz:	
 	def __init__(self, name, address, channel):
-		self.name = name	#a colloquial name for this joint
-		self.address = address #the I2C address of the NearZero controlling this motor/joint
-		self.channel = channel	#the NearZero channel that the motor/joint is wired to
+		self.name = name
+		self.address = address 
+		self.channel = channel	
 	def i2cSetup(self):
-		self.address = pylibi2c.I2CDevice('/dev/i2c-1', self.address) # Open i2c device with the correct bus and at the given address
-		self.address.delay = 10 # Set delay
-		self.address.page_bytes = 16 # Set page_bytes
-		self.address.flags = pylibi2c.I2C_M_IGNORE_NAK # Set flags
+		self.address = pylibi2c.I2CDevice('/dev/i2c-1', self.address) 
+		self.address.delay = 10 
+		self.address.page_bytes = 16 
+		self.address.flags = pylibi2c.I2C_M_IGNORE_NAK 
 	def write(self,mode,VelPos,I):
 		if abs(VelPos)< 10:		#make leading zeros depending on size of input
 			vpleader = "0000"
@@ -20,12 +20,12 @@ class joint:	#In robotics parlace we think of each motor as a joint
 			vpleader = "00"
 		elif abs(VelPos)< 10000:
 			vpleader = "0"
-		if VelPos >= 0:		#choose sign based on value of VelPos
+		if VelPos >= 0:			#choose sign based on value of VelPos
 			sign = "+"
 		else:
 			sign = "-"
 		VelPos = str(abs(VelPos))
-		if I < 10: 	#make leading zeros depending on value of I
+		if I < 10: 			#make leading zeros depending on value of I
 			Ileader = "0000"
 		elif I < 100:
 			Ileader = "000"
@@ -37,26 +37,24 @@ class joint:	#In robotics parlace we think of each motor as a joint
 		i2c_out = self.channel+mode+sign+vpleader+VelPos+'c'+Ileader+I	#concatenate the channel, sign, and command value
 		self.address.write(0x0, i2c_out)	#Write to ic2
 
-#INSTANTIATE THE JOINTS
-LeftWheel = joint("LeftWheel",0x40,"1")
-RightWheel = joint("RightWheel",0x40,"2")
-HeadYaw = joint("HeadYaw",0x41,"1")
-HeadPitch = joint("HeadPitch",0x41,"2")
-HeadRoll = joint("HeadRoll",0x42,"1")
+#-------------INSTANTIATE THE JOINTS-------------------------------
+LeftWheel = nz("LeftWheel",0x40,"1")
+RightWheel = nz("RightWheel",0x40,"2")
+#HeadYaw = nz("HeadYaw",0x41,"1")
+#HeadPitch = nz("HeadPitch",0x41,"2")
 
-#START THE I2C SERVICE FOR EACH I2C ADDRESS
+#-----------START THE I2C SERVICE FOR EACH I2C ADDRESS--------------
 LeftWheel.i2cSetup()
 RightWheel.i2cSetup()
-HeadYaw.i2cSetup()
-HeadPitch.i2cSetup()
-HeadRoll.i2cSetup()
+#HeadYaw.i2cSetup()
+#HeadPitch.i2cSetup()
 
 
-def move():	#This function takes in v_x and v_th and calculates the velocity for each wheel and writes it to each wheel
+def move():	#This function takes in v_x and v_th and calculates the differential drive velocity for each wheel and writes it to each wheel
 	vel1 = -1*(v_x + v_th)
 	vel2 = v_x - v_th
-	I1 = 3*int(abs(vel1))	#simple current scaling
-	I2 = 3*int(abs(vel2))
+	I1 = 1*int(abs(vel1))	#simple current scaling
+	I2 = 1*int(abs(vel2))
 	print("I1="),
 	print(I1),
 	print("A")
@@ -83,16 +81,15 @@ def getch():
 	return ch
 
 print('w = increment forward velocity')
-print('x or z = increment backward velocity')
+print('s = increment backward velocity')
 print('a = increment left steering')
 print('d = increment right steering')
+print('x = freeze')
 print('')
 print('i = point head up')
 print('m = point head down')
 print('j = point head left')
 print('k = point head right')
-print('h = roll head left')
-print('l = roll head right')
 print('o = head motors off')
 print('')
 print('q = quit')
@@ -114,16 +111,13 @@ while True:
 	elif (char == "a"):
 		v_th = v_th - 10
 		move()
-	elif (char == "x"):
-		v_x = v_x - 20
-		move()
-	elif (char == 'z'):
+	elif (char == "s"):
 		v_x = v_x - 20
 		move()
 	elif (char == "d"):
 		v_th = v_th + 10
 		move()
-	elif (char == "s"):
+	elif (char == "x"):
 		v_x = 0
 		v_th = 0
 		move()

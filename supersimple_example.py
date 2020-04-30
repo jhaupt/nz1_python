@@ -2,36 +2,25 @@ import ctypes
 import pylibi2c
 import time
 
-drive = pylibi2c.I2CDevice('/dev/i2c-1', 0x40) # Open i2c device at address 0x3
-drive.delay = 10 # Set delay
-drive.page_bytes = 16 # Set page_bytes
-drive.flags = pylibi2c.I2C_M_IGNORE_NAK # Set flags
+#------CONNECT TO NZ AT GIVEN ADDRESS (e.g. 0x40) AND GIVE IT A NAME (e.g. "wheels")------
+wheels = pylibi2c.I2CDevice('/dev/i2c-1', 0x40) 
+wheels.delay = 10 
+wheels.page_bytes = 16 
+wheels.flags = pylibi2c.I2C_M_IGNORE_NAK 
 
-head = pylibi2c.I2CDevice('/dev/i2c-1', 0x41) # Open i2c device at address 0x4
-head.delay = 10 # Set delay
-head.page_bytes = 16 # Set page_bytes
-head.flags = pylibi2c.I2C_M_IGNORE_NAK # Set flags
-
-huh = pylibi2c.I2CDevice('/dev/i2c-1', 0x42) # Open i2c device at address 0x5
-huh.delay = 10 # Set delay
-huh.page_bytes = 16 # Set page_bytes
-huh.flags = pylibi2c.I2C_M_IGNORE_NAK # Set flags
+#------CONNECT TO ANOTHER NZ WITH A DIFFERENT ADDRESS AND NAME----------------------------
+#head = pylibi2c.I2CDevice('/dev/i2c-1', 0x41) 
+#head.delay = 10 
+#head.page_bytes = 16 
+#head.flags = pylibi2c.I2C_M_IGNORE_NAK 
 
 
-# Write data to i2c
-#CHAN,MODE,SIGN,CMD,CMD,CMD,CMD,CMD,"C",CMD,CMD,CMD,CMD,CMD
-drive.write(0x0, '1s+00000c00200')	#Left wheel
-drive.write(0x0, '2s+00000c00200')	#Right wheel
+#------WRITE COMMANDS TO NEARZERO---------------------------------------------------------
+#(0x0, 'CHAN(1/2) MODE(v/p/s) SIGN(+/-) CMD CMD CMD CMD CMD "C" CMD CMD CMD CMD CMD')
+wheels.write(0x0, '1v+00100c00200')	#Drive channel 1 at velocity=100 with 200mA of current
+wheels.write(0x0, '2v+00250c00320')	#Drive channel 2 at velocity=250 with 320mA of current
 
-#head.write(0x0, '1p+00000c00000')	#Azimuth, +RIGHT / -LEFT
-#head.write(0x0, '2p+00000c00000')	#Altitude 
+#head.write(0x0, '1p+00000c00000')	#Drive channel 1 at position=0 with 0mA of current
+#head.write(0x0, '2p+01000c00600')	#Drive channel 2 at position=1000 and 600mA of current 
 
-#huh.write(0x0, '1p+00000c00100')	#Roll
-#huh.write(0x0, '2s-00300c00010')	#Aux
 
-#time.sleep(1)
-
-# Request i2c data from drive
-while True:
-	data = drive.read(0x0,12)	#address and buffer size
-	print(data)
